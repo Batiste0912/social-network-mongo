@@ -56,6 +56,12 @@ function user_routes($client): void
 
     // READ - Lire un ou plusieurs utilisateurs
     if ($method === 'GET') {
+        // Endpoint spécial: /api/users/count -> retourner le nombre d'utilisateurs
+        if ($id === 'count') {
+            $total = $users->countDocuments([]);
+            sendResponse(200, ['count' => $total], 'Nombre d\'utilisateurs');
+        }
+
         if ($id) {
             try {
                 $objectId = new ObjectId($id);
