@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "social-network-mongo",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
