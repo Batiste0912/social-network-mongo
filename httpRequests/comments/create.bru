@@ -1,0 +1,30 @@
+meta {
+  name: create
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/api/comments
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "content": "Super article, merci pour le partage !",
+    "post_id": "650fabc1234567890abcdef1",
+    "user_id": "650fabc1234567890abcdef2",
+    "date": "2025-11-07T12:34:56+00:00"
+  }
+  
+}
+
+vars:post-response {
+  commentId: res.body["data"]["_id"]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

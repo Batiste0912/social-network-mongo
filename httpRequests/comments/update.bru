@@ -1,0 +1,26 @@
+meta {
+  name: update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8000/api/comments/{{commentId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "content": "Super article !",
+    "post_id": "650fabc1234567890abcdef1",
+    "user_id": "650fabc1234567890abcdef2",
+    "date": "2025-11-07T12:34:56+00:00"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
