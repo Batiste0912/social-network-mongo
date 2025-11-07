@@ -1,0 +1,25 @@
+meta {
+  name: update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8000/api/users/{{id}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "username": "batiste",
+    "email": "batiste.dubo@outlook.fr",
+    "password": "1234567890",
+    "is_active": true
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
