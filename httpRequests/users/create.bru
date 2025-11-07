@@ -1,11 +1,11 @@
 meta {
-  name: update
+  name: create
   type: http
-  seq: 4
+  seq: 3
 }
 
-put {
-  url: http://localhost:8000/api/users/{{id}}
+post {
+  url: http://localhost:8000/api/users
   body: json
   auth: inherit
 }
@@ -13,10 +13,14 @@ put {
 body:json {
   {
     "username": "batiste",
-    "email": "batiste.dubo@outlook.fr",
+    "email": "batiste@example.fr",
     "password": "1234567890",
     "is_active": true
   }
+}
+
+vars:post-response {
+  userId: res.body["data"]["_id"]
 }
 
 settings {

@@ -1,11 +1,11 @@
 meta {
-  name: delete
+  name: show
   type: http
-  seq: 5
+  seq: 2
 }
 
-delete {
-  url: http://localhost:8000/api/users/{{id}}
+get {
+  url: http://localhost:8000/api/users/{{userId}}
   body: none
   auth: inherit
 }
