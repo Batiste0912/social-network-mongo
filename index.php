@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/utils/utils.php';
 require_once __DIR__ . '/routes/users.php';
 require_once __DIR__ . '/routes/comments.php';
+require_once __DIR__ . '/routes/follows.php';
 
 // Create a database client
 $client = new Client('mongodb+srv://db_user:1234567890@next-u-cluster.hc5o3l4.mongodb.net/');
@@ -27,12 +28,14 @@ $client = new Client('mongodb+srv://db_user:1234567890@next-u-cluster.hc5o3l4.mo
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $segments = explode('/', trim($path, '/'));
 
-// Router basique: si /api/users -> user_routes, si /api/comments -> comments_routes
+// Router basique: si /api/users -> user_routes, si /api/comments -> comments_routes, si /api/follows -> follows_routes
 if (isset($segments[0]) && $segments[0] === 'api' && isset($segments[1])) {
     if ($segments[1] === 'users') {
         user_routes($client);
     } elseif ($segments[1] === 'comments') {
         comments_routes($client);
+    } elseif ($segments[1] === 'follows') {
+        follows_routes($client);
     } else {
         sendError(404, 'Route non trouvée');
     }
