@@ -1,0 +1,17 @@
+meta {
+  name: delete
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:8000/api/likes/{{likeId}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
