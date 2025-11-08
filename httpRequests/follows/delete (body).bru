@@ -1,0 +1,23 @@
+meta {
+  name: delete (body)
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:8000/api/follows
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "user_id": "690e687bab44b23de3092818",
+    "user_follow_id": "690f1f5ec9921fbabd0d2b52"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

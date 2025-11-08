@@ -1,0 +1,16 @@
+meta {
+  name: followings
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8000/api/follows/following/{{userId}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
