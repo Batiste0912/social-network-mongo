@@ -459,4 +459,31 @@ function posts_routes($client): void
         }
     }
 
+    // GET /posts/no-comments - Récupérer les posts sans commentaires
+    if ($method === 'GET' && isset($segments[2]) && $segments[2] === 'no-comments' && !isset($segments[3])) {
+        $posts = $client->social_network->posts;
+        $comments = $client->social_network->comments;
+
+        try {
+            // Récupérer tous les posts
+            $cursor = $posts->find([]);
+            $results = [];
+
+            foreach ($cursor as $post) {
+                // Vérifier si le post a des commentaires
+                $commentCount = $comments->countDocuments(['post_id' => $post['_id']]);
+
+                if ($commentCount === 0) {
+                    $post['_id'] = (string) $post['_id'];
+                    $results[] = $post;
+                }
+            }
+
+            sendResponse(200, $results, 'Posts sans commentaires récupérés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
+        }
+    }
+
+
 }
