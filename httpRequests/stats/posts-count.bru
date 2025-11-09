@@ -1,0 +1,17 @@
+meta {
+  name: posts count
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/api/stats/posts/count
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+

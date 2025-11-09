@@ -23,6 +23,7 @@ require_once __DIR__ . '/routes/follows.php';
 require_once __DIR__ . '/routes/likes.php';
 require_once __DIR__ . '/routes/categories.php';
 require_once __DIR__ . '/routes/posts.php';
+require_once __DIR__ . '/routes/stats.php';
 
 // Create a database client
 $client = new Client('mongodb+srv://db_user:1234567890@next-u-cluster.hc5o3l4.mongodb.net/');
@@ -45,6 +46,8 @@ if (isset($segments[0]) && $segments[0] === 'api' && isset($segments[1])) {
         categories_routes($client);
     } elseif ($segments[1] === 'posts') {
         posts_routes($client);
+    } elseif ($segments[1] === 'stats') {
+        stats_routes($client);
     } else {
         sendError(404, 'Route non trouvée');
     }
