@@ -1,0 +1,28 @@
+meta {
+  name: create
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/api/categories
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Technologie"
+  }
+  
+}
+
+vars:post-response {
+  categoryId: res.body["data"]["_id"]
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
