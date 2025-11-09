@@ -485,5 +485,46 @@ function posts_routes($client): void
         }
     }
 
+    // GET /posts/{id}/details - Récupérer un post et ses commentaires associés
+    if ($method === 'GET' && isset($segments[2]) && isset($segments[3]) && $segments[3] === 'details' && !isset($segments[4])) {
+        $posts = $client->social_network->posts;
+        $comments = $client->social_network->comments;
+        $postId = $segments[2];
 
+        try {
+            // Essayer avec un ObjectId si c'est un format valide
+            if (preg_match('/^[a-f\d]{24}$/i', $postId)) {
+                $objectId = new ObjectId($postId);
+            } else {
+                sendError(400, 'ID invalide');
+            }
+
+            // Récupérer le post
+            $post = $posts->findOne(['_id' => $objectId]);
+
+            if (!$post) {
+                sendError(404, 'Post non trouvé');
+            }
+
+            // Convertir l'ObjectId du post en string
+            $post['_id'] = (string) $post['_id'];
+
+            // Récupérer les commentaires associés
+            $cursor = $comments->find(['post_id' => $objectId]);
+            $commentsList = [];
+
+            foreach ($cursor as $comment) {
+                $comment['_id'] = (string) $comment['_id'];
+                $comment['post_id'] = (string) $comment['post_id'];
+                $commentsList[] = $comment;
+            }
+
+            // Préparer la réponse avec le post et ses commentaires
+            $response = array_merge($post, ['comments' => $commentsList]);
+
+            sendResponse(200, $response, 'Post et commentaires récupérés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la récupération du post: ' . $e->getMessage());
+        }
+    }
 }
