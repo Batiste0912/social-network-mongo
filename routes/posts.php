@@ -424,4 +424,39 @@ function posts_routes($client): void
             sendError(404, 'Post non trouvé');
         }
     }
+
+    // GET /posts/search?query={mot} - Récupérer les posts contenant un mot clé
+    if ($method === 'GET' && isset($segments[2]) && $segments[2] === 'search') {
+        $posts = $client->social_network->posts;
+
+        // Récupérer le paramètre query
+        $query = $_GET['query'] ?? null;
+
+        if (!$query || trim($query) === '') {
+            sendError(400, 'Le paramètre query est requis');
+        }
+
+        try {
+            // Créer un filtre pour rechercher dans le titre et le contenu
+            $filter = [
+                '$or' => [
+                    ['title' => ['$regex' => $query, '$options' => 'i']],
+                    ['content' => ['$regex' => $query, '$options' => 'i']]
+                ]
+            ];
+
+            $cursor = $posts->find($filter);
+            $results = [];
+
+            foreach ($cursor as $doc) {
+                $doc['_id'] = (string) $doc['_id'];
+                $results[] = $doc;
+            }
+
+            sendResponse(200, $results, 'Posts trouvés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la recherche: ' . $e->getMessage());
+        }
+    }
+
 }
