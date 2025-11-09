@@ -1,0 +1,24 @@
+meta {
+  name: update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8000/api/categories/{{categoryId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Technologie Avancée"
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+

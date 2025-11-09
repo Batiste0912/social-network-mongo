@@ -21,6 +21,7 @@ require_once __DIR__ . '/routes/users.php';
 require_once __DIR__ . '/routes/comments.php';
 require_once __DIR__ . '/routes/follows.php';
 require_once __DIR__ . '/routes/likes.php';
+require_once __DIR__ . '/routes/categories.php';
 
 // Create a database client
 $client = new Client('mongodb+srv://db_user:1234567890@next-u-cluster.hc5o3l4.mongodb.net/');
@@ -29,7 +30,7 @@ $client = new Client('mongodb+srv://db_user:1234567890@next-u-cluster.hc5o3l4.mo
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $segments = explode('/', trim($path, '/'));
 
-// Router basique: si /api/users -> user_routes, si /api/comments -> comments_routes, si /api/follows -> follows_routes, si /api/likes -> likes_routes
+// Router basique
 if (isset($segments[0]) && $segments[0] === 'api' && isset($segments[1])) {
     if ($segments[1] === 'users') {
         user_routes($client);
@@ -39,6 +40,8 @@ if (isset($segments[0]) && $segments[0] === 'api' && isset($segments[1])) {
         follows_routes($client);
     } elseif ($segments[1] === 'likes') {
         likes_routes($client);
+    } elseif ($segments[1] === 'categories') {
+        categories_routes($client);
     } else {
         sendError(404, 'Route non trouvée');
     }
