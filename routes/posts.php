@@ -424,4 +424,107 @@ function posts_routes($client): void
             sendError(404, 'Post non trouvé');
         }
     }
+
+    // GET /posts/search?query={mot} - Récupérer les posts contenant un mot clé
+    if ($method === 'GET' && isset($segments[2]) && $segments[2] === 'search') {
+        $posts = $client->social_network->posts;
+
+        // Récupérer le paramètre query
+        $query = $_GET['query'] ?? null;
+
+        if (!$query || trim($query) === '') {
+            sendError(400, 'Le paramètre query est requis');
+        }
+
+        try {
+            // Créer un filtre pour rechercher dans le titre et le contenu
+            $filter = [
+                '$or' => [
+                    ['title' => ['$regex' => $query, '$options' => 'i']],
+                    ['content' => ['$regex' => $query, '$options' => 'i']]
+                ]
+            ];
+
+            $cursor = $posts->find($filter);
+            $results = [];
+
+            foreach ($cursor as $doc) {
+                $doc['_id'] = (string) $doc['_id'];
+                $results[] = $doc;
+            }
+
+            sendResponse(200, $results, 'Posts trouvés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la recherche: ' . $e->getMessage());
+        }
+    }
+
+    // GET /posts/no-comments - Récupérer les posts sans commentaires
+    if ($method === 'GET' && isset($segments[2]) && $segments[2] === 'no-comments' && !isset($segments[3])) {
+        $posts = $client->social_network->posts;
+        $comments = $client->social_network->comments;
+
+        try {
+            // Récupérer tous les posts
+            $cursor = $posts->find([]);
+            $results = [];
+
+            foreach ($cursor as $post) {
+                // Vérifier si le post a des commentaires
+                $commentCount = $comments->countDocuments(['post_id' => $post['_id']]);
+
+                if ($commentCount === 0) {
+                    $post['_id'] = (string) $post['_id'];
+                    $results[] = $post;
+                }
+            }
+
+            sendResponse(200, $results, 'Posts sans commentaires récupérés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
+        }
+    }
+
+    // GET /posts/{id}/details - Récupérer un post et ses commentaires associés
+    if ($method === 'GET' && isset($segments[2]) && isset($segments[3]) && $segments[3] === 'details' && !isset($segments[4])) {
+        $posts = $client->social_network->posts;
+        $comments = $client->social_network->comments;
+        $postId = $segments[2];
+
+        try {
+            // Essayer avec un ObjectId si c'est un format valide
+            if (preg_match('/^[a-f\d]{24}$/i', $postId)) {
+                $objectId = new ObjectId($postId);
+            } else {
+                sendError(400, 'ID invalide');
+            }
+
+            // Récupérer le post
+            $post = $posts->findOne(['_id' => $objectId]);
+
+            if (!$post) {
+                sendError(404, 'Post non trouvé');
+            }
+
+            // Convertir l'ObjectId du post en string
+            $post['_id'] = (string) $post['_id'];
+
+            // Récupérer les commentaires associés
+            $cursor = $comments->find(['post_id' => $objectId]);
+            $commentsList = [];
+
+            foreach ($cursor as $comment) {
+                $comment['_id'] = (string) $comment['_id'];
+                $comment['post_id'] = (string) $comment['post_id'];
+                $commentsList[] = $comment;
+            }
+
+            // Préparer la réponse avec le post et ses commentaires
+            $response = array_merge($post, ['comments' => $commentsList]);
+
+            sendResponse(200, $response, 'Post et commentaires récupérés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la récupération du post: ' . $e->getMessage());
+        }
+    }
 }
