@@ -122,7 +122,47 @@ function posts_routes($client): void
 
     // READ - Lire un ou plusieurs posts
     if ($method === 'GET') {
-        if ($id) {
+        // GET /posts/latest?limit=5 - Récupérer les derniers posts
+        if ($id === 'latest') {
+            // Récupérer le paramètre limit depuis la query string
+            $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 5;
+            
+            // S'assurer que la limite est raisonnable
+            if ($limit < 1) $limit = 5;
+            if ($limit > 100) $limit = 100;
+            
+            try {
+                $cursor = $posts->find(
+                    [],
+                    [
+                        'sort' => ['date' => -1], // Tri décroissant par date
+                        'limit' => $limit
+                    ]
+                );
+                
+                $results = [];
+                foreach ($cursor as $doc) {
+                    $doc['_id'] = (string) $doc['_id'];
+                    
+                    if (isset($doc['user_id'])) {
+                        $doc['user_id'] = is_object($doc['user_id']) ? (string) $doc['user_id'] : $doc['user_id'];
+                    }
+                    if (isset($doc['category_id'])) {
+                        $doc['category_id'] = is_object($doc['category_id']) ? (string) $doc['category_id'] : $doc['category_id'];
+                    }
+                    if (isset($doc['date']) && $doc['date'] instanceof UTCDateTime) {
+                        $doc['date'] = $fromUTCDateTime($doc['date']);
+                    }
+                    
+                    $results[] = $doc;
+                }
+                
+                sendResponse(200, $results, "Les $limit derniers posts");
+            } catch (Exception $e) {
+                sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
+            }
+        }
+        elseif ($id) {
             try {
                 // Essayer avec un ObjectId si c'est un format valide
                 if (preg_match('/^[a-f\d]{24}$/i', $id)) {
