@@ -1,0 +1,17 @@
+meta {
+  name: latest posts
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8000/api/posts/latest?limit=5
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
