@@ -213,4 +213,58 @@ function user_routes($client): void
             sendError(404, 'Utilisateur non trouvé');
         }
     }
+
+    // GET /users/pseudos?page={page}&limit=3 - Récupérer les pseudos d'utilisateurs avec pagination
+    if ($method === 'GET' && isset($segments[2]) && $segments[2] === 'pseudos') {
+        $users = $client->social_network->users;
+
+        // Récupérer les paramètres de pagination
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = (int) ($_GET['limit'] ?? 3);
+
+        // Valider les paramètres
+        if ($page < 1) {
+            sendError(400, 'Le paramètre page doit être >= 1');
+        }
+        if ($limit < 1 || $limit > 100) {
+            sendError(400, 'Le paramètre limit doit être entre 1 et 100');
+        }
+
+        try {
+            // Calculer le skip
+            $skip = ($page - 1) * $limit;
+
+            // Compter le nombre total d'utilisateurs
+            $total = $users->countDocuments([]);
+
+            // Récupérer les pseudos avec pagination
+            $cursor = $users->find([], [
+                'projection' => ['pseudo' => 1],
+                'skip' => $skip,
+                'limit' => $limit
+            ]);
+
+            $results = [];
+            foreach ($cursor as $doc) {
+                $doc['_id'] = (string) $doc['_id'];
+                $results[] = $doc;
+            }
+
+            // Préparer la réponse avec les métadonnées de pagination
+            $response = [
+                'data' => $results,
+                'pagination' => [
+                    'page' => $page,
+                    'limit' => $limit,
+                    'total' => $total,
+                    'pages' => (int) ceil($total / $limit)
+                ]
+            ];
+
+            sendResponse(200, $response, 'Pseudos récupérés');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors de la récupération des pseudos: ' . $e->getMessage());
+        }
+    }
+
 }
