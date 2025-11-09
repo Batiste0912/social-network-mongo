@@ -53,8 +53,40 @@ function stats_routes($client): void
             sendError(500, 'Erreur lors du comptage des commentaires: ' . $e->getMessage());
         }
     }
-    else {
-        sendError(404, 'Endpoint de statistiques non trouvé');
+
+    // GET /stats/categories/{id}/likes/average - Renvoie la moyenne de likes des posts appartenant à la catégorie demandée.
+    elseif (isset($segments[2]) && $segments[2] === 'categories' && isset($segments[3]) && isset($segments[4]) && $segments[4] === 'likes' && isset($segments[5]) && $segments[5] === 'average') {
+        $posts = $client->social_network->posts;
+        $likes = $client->social_network->likes;
+        $categoryId = $segments[3];
+
+        try {
+            // Récupérer tous les posts de la catégorie
+            $filter = ['category' => $categoryId];
+            $postsInCategory = $posts->find($filter)->toArray();
+
+            if (empty($postsInCategory)) {
+                sendResponse(200, ['average' => 0], 'Aucun post dans cette catégorie');
+                return;
+            }
+
+            // Calculer la somme des likes pour chaque post
+            $totalLikes = 0;
+            foreach ($postsInCategory as $post) {
+                $count = $likes->countDocuments(['post_id' => $post['_id']]);
+                $totalLikes += $count;
+            }
+
+            $average = $totalLikes / count($postsInCategory);
+
+            sendResponse(200, ['average' => $average], 'Moyenne de likes récupérée');
+        } catch (Exception $e) {
+            sendError(500, 'Erreur lors du calcul de la moyenne: ' . $e->getMessage());
+        }
     }
+
+    else {
+            sendError(404, 'Endpoint de statistiques non trouvé');
+        }
 }
 
