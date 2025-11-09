@@ -179,4 +179,3 @@ function categories_routes($client): void
         }
     }
 }
-
