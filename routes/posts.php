@@ -162,6 +162,90 @@ function posts_routes($client): void
                 sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
             }
         }
+        // GET /posts/after?date=YYYY-MM-DD - Récupérer les posts après une date
+        elseif ($id === 'after' && isset($_GET['date'])) {
+            $dateStr = $_GET['date'];
+            
+            try {
+                // Valider et convertir la date
+                $date = DateTime::createFromFormat('Y-m-d', $dateStr);
+                if (!$date) {
+                    sendError(400, 'Format de date invalide. Utilisez YYYY-MM-DD');
+                }
+                
+                // Début de la journée en UTC
+                $date->setTime(0, 0, 0);
+                $utcDate = new UTCDateTime($date->getTimestamp() * 1000);
+                
+                $cursor = $posts->find(
+                    ['date' => ['$gt' => $utcDate]],
+                    ['sort' => ['date' => -1]]
+                );
+                
+                $results = [];
+                foreach ($cursor as $doc) {
+                    $doc['_id'] = (string) $doc['_id'];
+                    
+                    if (isset($doc['user_id'])) {
+                        $doc['user_id'] = is_object($doc['user_id']) ? (string) $doc['user_id'] : $doc['user_id'];
+                    }
+                    if (isset($doc['category_id'])) {
+                        $doc['category_id'] = is_object($doc['category_id']) ? (string) $doc['category_id'] : $doc['category_id'];
+                    }
+                    if (isset($doc['date']) && $doc['date'] instanceof UTCDateTime) {
+                        $doc['date'] = $fromUTCDateTime($doc['date']);
+                    }
+                    
+                    $results[] = $doc;
+                }
+                
+                sendResponse(200, $results, "Posts après le $dateStr");
+            } catch (Exception $e) {
+                sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
+            }
+        }
+        // GET /posts/before?date=YYYY-MM-DD - Récupérer les posts avant une date
+        elseif ($id === 'before' && isset($_GET['date'])) {
+            $dateStr = $_GET['date'];
+            
+            try {
+                // Valider et convertir la date
+                $date = DateTime::createFromFormat('Y-m-d', $dateStr);
+                if (!$date) {
+                    sendError(400, 'Format de date invalide. Utilisez YYYY-MM-DD');
+                }
+                
+                // Fin de la journée en UTC
+                $date->setTime(23, 59, 59);
+                $utcDate = new UTCDateTime($date->getTimestamp() * 1000);
+                
+                $cursor = $posts->find(
+                    ['date' => ['$lt' => $utcDate]],
+                    ['sort' => ['date' => -1]]
+                );
+                
+                $results = [];
+                foreach ($cursor as $doc) {
+                    $doc['_id'] = (string) $doc['_id'];
+                    
+                    if (isset($doc['user_id'])) {
+                        $doc['user_id'] = is_object($doc['user_id']) ? (string) $doc['user_id'] : $doc['user_id'];
+                    }
+                    if (isset($doc['category_id'])) {
+                        $doc['category_id'] = is_object($doc['category_id']) ? (string) $doc['category_id'] : $doc['category_id'];
+                    }
+                    if (isset($doc['date']) && $doc['date'] instanceof UTCDateTime) {
+                        $doc['date'] = $fromUTCDateTime($doc['date']);
+                    }
+                    
+                    $results[] = $doc;
+                }
+                
+                sendResponse(200, $results, "Posts avant le $dateStr");
+            } catch (Exception $e) {
+                sendError(500, 'Erreur lors de la récupération des posts: ' . $e->getMessage());
+            }
+        }
         elseif ($id) {
             try {
                 // Essayer avec un ObjectId si c'est un format valide
