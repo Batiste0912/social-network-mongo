@@ -1,0 +1,17 @@
+meta {
+  name: post comments count
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8000/api/stats/posts/1/comments/count
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
